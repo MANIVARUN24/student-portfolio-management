@@ -1,10 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const Login = ({ onLogin }) => {
   const [role, setRole] = useState('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [institution, setInstitution] = useState('');
+
+  // Default email changes based on role
+  useEffect(() => {
+    if (role === 'student') {
+      setEmail('student.name@college.edu');
+    } else {
+      setEmail('teacher.admin@school.edu');
+    }
+  }, [role]);
 
   const handleRoleChange = (r) => setRole(r);
 
@@ -23,7 +32,6 @@ const Login = ({ onLogin }) => {
     buttonHover: isAdmin ? '#273ea1' : '#1a1a40',
   };
 
-  // Predefined institutions
   const institutions = [
     'NIT Warangal',
     'IIT Hyderabad',
@@ -137,11 +145,6 @@ const Login = ({ onLogin }) => {
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder={
-              isAdmin
-                ? 'teacher.admin@school.edu'
-                : 'student.name@college.edu'
-            }
             required
             style={{
               width: '100%',
@@ -155,7 +158,7 @@ const Login = ({ onLogin }) => {
             }}
           />
 
-          {/* Institution Dropdown (Only for Teachers/Admins) */}
+          {/* Institution Dropdown (Only for Admins) */}
           {isAdmin && (
             <>
               <label
@@ -235,12 +238,8 @@ const Login = ({ onLogin }) => {
               cursor: 'pointer',
               transition: 'background 0.3s',
             }}
-            onMouseOver={(e) =>
-              (e.target.style.background = theme.buttonHover)
-            }
-            onMouseOut={(e) =>
-              (e.target.style.background = theme.buttonBg)
-            }
+            onMouseOver={(e) => (e.target.style.background = theme.buttonHover)}
+            onMouseOut={(e) => (e.target.style.background = theme.buttonBg)}
           >
             Sign in as {isAdmin ? 'Teacher/Admin' : 'Student'}
           </button>
