@@ -7,7 +7,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import ProjectForm from "./components/ProjectForm";
 import PortfolioView from "./components/PortfolioView";
 import AdminReview from "./components/AdminReview";
-import Login from "./components/Login";
+import Login from "./components/Login"; // ✅ Make sure file name is "Login.jsx" (case-sensitive)
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -70,23 +70,29 @@ function App() {
   ]);
 
   // 🟩 Add new project (student)
-  const addProject = (proj) => setProjects([...projects, proj]);
+  const addProject = (proj) => setProjects((prev) => [...prev, proj]);
 
   // 🟨 Update an existing project
   const updateProject = (updatedProj) => {
-    const updated = projects.map((proj) =>
-      proj.title === updatedProj.title ? updatedProj : proj
+    setProjects((prev) =>
+      prev.map((proj) =>
+        proj.title === updatedProj.title ? updatedProj : proj
+      )
     );
-    setProjects(updated);
   };
 
   // 🟦 Admin gives feedback
   const provideFeedback = (index, feedback, rating, status) => {
-    const updated = [...projects];
-    updated[index].feedback = feedback;
-    updated[index].rating = rating;
-    updated[index].status = status;
-    setProjects(updated);
+    setProjects((prev) => {
+      const updated = [...prev];
+      updated[index] = {
+        ...updated[index],
+        feedback,
+        rating,
+        status,
+      };
+      return updated;
+    });
   };
 
   // 🟧 Handle login (student/admin)
@@ -97,11 +103,12 @@ function App() {
 
   // 🟥 Handle logout
   const handleLogout = () => {
-    const confirmLogout = window.confirm("Are you sure you want to log out?");
-    if (confirmLogout) setLoggedIn(false);
+    if (window.confirm("Are you sure you want to log out?")) {
+      setLoggedIn(false);
+    }
   };
 
-  // ⛔ Show login first
+  // ⛔ Show login page first
   if (!loggedIn) {
     return <Login onLogin={handleLogin} />;
   }
@@ -112,7 +119,7 @@ function App() {
       <Navbar isAdmin={isAdmin} onLogout={handleLogout} />
 
       <div style={{ background: "#f7f8fa", minHeight: "100vh", padding: "2rem" }}>
-        {/* Optional role switcher */}
+        {/* Optional Role Switcher */}
         {/* <RoleSwitcher isAdmin={isAdmin} setIsAdmin={setIsAdmin} /> */}
 
         <Routes>
@@ -122,8 +129,8 @@ function App() {
             element={
               isAdmin ? (
                 <AdminDashboard
-                  allProjects={projects}               // ✅ fixed prop name
-                  provideFeedback={provideFeedback}   // ✅ passes back to App
+                  allProjects={projects} // ✅ correct prop name
+                  provideFeedback={provideFeedback}
                 />
               ) : (
                 <StudentDashboard
@@ -136,8 +143,14 @@ function App() {
           />
 
           {/* Student routes */}
-          <Route path="/upload" element={<ProjectForm addProject={addProject} />} />
-          <Route path="/portfolio" element={<PortfolioView projects={projects} />} />
+          <Route
+            path="/upload"
+            element={<ProjectForm addProject={addProject} />}
+          />
+          <Route
+            path="/portfolio"
+            element={<PortfolioView projects={projects} />}
+          />
 
           {/* Admin routes */}
           {isAdmin && (
