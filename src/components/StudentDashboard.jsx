@@ -47,50 +47,28 @@ export default function StudentDashboard({ projects, addProject, updateProject }
   const inProgress = projects.filter((p) => p.status === "in-progress").length;
   const milestones = "5/6";
 
-  // ✅ Sample data for Progress Tracking
-  const progressData = [
-    {
-      title: "E-commerce Website",
-      progress: 100,
-      status: "completed",
-      milestones: [
-        { name: "Requirements Analysis", due: "2024-01-30" },
-        { name: "Database Design", due: "2024-02-15" },
-        { name: "Frontend Development", due: "2024-02-28" },
-      ],
-    },
-    {
-      title: "Mobile App UI Design",
-      progress: 75,
-      status: "in-progress",
-      milestones: [
-        { name: "User Research", due: "2024-02-15" },
-        { name: "Wireframing", due: "2024-03-01" },
-        { name: "High-fidelity Mockups", due: "2024-03-25" },
-      ],
-    },
-    {
-      title: "Data Analysis Project",
-      progress: 25,
-      status: "planning",
-      milestones: [],
-    },
-  ];
+  // ⭐ REPLACED DUMMY PROGRESS DATA WITH BACKEND DATA
+  const progressData = projects.map((p) => ({
+    title: p.title,
+    progress: p.progress || 0,
+    status: p.status || "in-progress",
+    milestones: p.milestones || [],
+  }));
 
-  // ✅ Feedback Data
+  // Sample Feedback (kept same — unrelated)
   const feedbackData = [
     {
       project: "E-commerce Website",
       teacher: "Prof. Sarah Wilson",
       date: "2024-03-10",
-      comment: "Excellent work on the user interface! The design is clean and intuitive.",
+      comment: "Excellent work on the user interface!",
       rating: 5,
     },
     {
       project: "Mobile App UI Design",
       teacher: "Dr. Emily Johnson",
       date: "2024-03-18",
-      comment: "Good progress! Try to improve color contrast for better readability.",
+      comment: "Good progress! Improve color contrast.",
       rating: 4,
     },
   ];
@@ -108,11 +86,10 @@ export default function StudentDashboard({ projects, addProject, updateProject }
           </p>
         </div>
 
-        {/* ✅ Show Add Project only for My Projects tab */}
         {activeTab === "My Projects" && (
           <button
             onClick={() => {
-              setEditingProject(null); // Reset editing
+              setEditingProject(null);
               setFormData({
                 title: "",
                 category: "",
@@ -124,8 +101,8 @@ export default function StudentDashboard({ projects, addProject, updateProject }
                 liveURL: "",
                 image: "",
                 progress: 0,
-              }); // Clear data
-              setShowForm(true); // Open blank form
+              });
+              setShowForm(true);
             }}
             style={{
               background: "#0a0a23",
@@ -195,6 +172,7 @@ export default function StudentDashboard({ projects, addProject, updateProject }
                       }}
                     ></div>
                   </div>
+
                   <div
                     style={{
                       display: "flex",
@@ -203,12 +181,13 @@ export default function StudentDashboard({ projects, addProject, updateProject }
                       marginTop: "0.8rem",
                     }}
                   >
-                    {p.tags.map((tag, i) => (
+                    {p.tags?.map((tag, i) => (
                       <span key={i} style={tagStyle}>
                         {tag}
                       </span>
                     ))}
                   </div>
+
                   <div style={{ textAlign: "right", marginTop: "0.8rem" }}>
                     <button style={editBtn} onClick={() => openEdit(p)}>
                       Edit
@@ -226,7 +205,7 @@ export default function StudentDashboard({ projects, addProject, updateProject }
         <div style={{ textAlign: "center" }}>
           <h4 style={{ color: "#232323", marginBottom: "0.5rem" }}>Portfolio View</h4>
           <p style={{ color: "#555", marginBottom: "1.5rem" }}>
-            This is how your portfolio will appear to visitors and potential employers
+            This is how your portfolio will appear to visitors.
           </p>
           <div
             style={{
@@ -252,90 +231,99 @@ export default function StudentDashboard({ projects, addProject, updateProject }
         </div>
       )}
 
-      {/* Progress Tracking */}
+      {/* ⭐ BACKEND PROGRESS TRACKING TAB */}
       {activeTab === "Progress Tracking" && (
         <div>
           <h4 style={{ marginBottom: "1rem", color: "#232323" }}>Progress Tracking</h4>
-          {progressData.map((proj, index) => (
-            <div
-              key={index}
-              style={{
-                background: "#fff",
-                borderRadius: "8px",
-                padding: "1rem 1.5rem",
-                marginBottom: "1.5rem",
-                boxShadow: "0 1px 5px rgba(0,0,0,0.05)",
-              }}
-            >
+
+          {progressData.length === 0 ? (
+            <p style={{ color: "#777" }}>No projects added yet.</p>
+          ) : (
+            progressData.map((proj, index) => (
               <div
+                key={index}
                 style={{
-                  fontWeight: "bold",
-                  marginBottom: "0.3rem",
-                  display: "flex",
-                  justifyContent: "space-between",
+                  background: "#fff",
+                  borderRadius: "8px",
+                  padding: "1rem 1.5rem",
+                  marginBottom: "1.5rem",
+                  boxShadow: "0 1px 5px rgba(0,0,0,0.05)",
                 }}
               >
-                <span>{proj.title}</span>
-                <span
-                  style={{
-                    background: `${statusColors[proj.status]}20`,
-                    color: statusColors[proj.status],
-                    padding: "2px 8px",
-                    borderRadius: "6px",
-                    fontSize: "0.8rem",
-                    fontWeight: "500",
-                    textTransform: "capitalize",
-                  }}
-                >
-                  {proj.status}
-                </span>
-              </div>
-              <div style={{ marginBottom: "0.3rem", fontSize: "0.85rem", color: "#555" }}>
-                {proj.progress}% complete
-              </div>
-              <div style={progressOuter}>
                 <div
                   style={{
-                    ...progressInner,
-                    width: `${proj.progress}%`,
-                    background: "#0a0a23",
-                    transition: "width 0.8s ease-in-out",
+                    fontWeight: "bold",
+                    marginBottom: "0.3rem",
+                    display: "flex",
+                    justifyContent: "space-between",
                   }}
-                ></div>
-              </div>
-              <div style={{ marginTop: "0.8rem" }}>
-                <p style={{ fontWeight: "bold", marginBottom: "0.4rem" }}>Milestones:</p>
-                {proj.milestones.length > 0 ? (
-                  proj.milestones.map((m, i) => (
-                    <div
-                      key={i}
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        fontSize: "0.85rem",
-                        marginBottom: "0.3rem",
-                      }}
-                    >
-                      <span
+                >
+                  <span>{proj.title}</span>
+                  <span
+                    style={{
+                      background: `${statusColors[proj.status]}20`,
+                      color: statusColors[proj.status],
+                      padding: "2px 8px",
+                      borderRadius: "6px",
+                      fontSize: "0.8rem",
+                      fontWeight: "500",
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {proj.status}
+                  </span>
+                </div>
+
+                <div style={{ marginBottom: "0.3rem", fontSize: "0.85rem", color: "#555" }}>
+                  {proj.progress}% complete
+                </div>
+
+                <div style={progressOuter}>
+                  <div
+                    style={{
+                      ...progressInner,
+                      width: `${proj.progress}%`,
+                      background: "#0a0a23",
+                      transition: "width 0.8s ease-in-out",
+                    }}
+                  ></div>
+                </div>
+
+                <div style={{ marginTop: "0.8rem" }}>
+                  <p style={{ fontWeight: "bold", marginBottom: "0.4rem" }}>Milestones:</p>
+
+                  {proj.milestones.length > 0 ? (
+                    proj.milestones.map((m, i) => (
+                      <div
+                        key={i}
                         style={{
-                          width: "8px",
-                          height: "8px",
-                          borderRadius: "50%",
-                          background: "#22c55e",
-                          marginRight: "6px",
+                          display: "flex",
+                          alignItems: "center",
+                          fontSize: "0.85rem",
+                          marginBottom: "0.3rem",
                         }}
-                      ></span>
-                      <span>
-                        <strong>{m.name}</strong> - Due {m.due}
-                      </span>
-                    </div>
-                  ))
-                ) : (
-                  <p style={{ color: "#777", fontSize: "0.85rem" }}>No milestones added yet.</p>
-                )}
+                      >
+                        <span
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            background: "#22c55e",
+                            marginRight: "6px",
+                          }}
+                        ></span>
+                        <span>
+                          <strong>{m.name}</strong> - Due {m.due}
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p style={{ color: "#777", fontSize: "0.85rem" }}>No milestones added.</p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       )}
 
@@ -381,7 +369,7 @@ export default function StudentDashboard({ projects, addProject, updateProject }
         </div>
       )}
 
-      {/* ✅ Modal */}
+      {/* Modal */}
       {showForm && (
         <div style={modalOverlay} onClick={() => setShowForm(false)}>
           <form
@@ -553,7 +541,7 @@ export default function StudentDashboard({ projects, addProject, updateProject }
   );
 }
 
-// ✅ Styles
+// STYLES
 const cardStyle = {
   background: "#fff",
   borderRadius: "12px",
