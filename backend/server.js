@@ -1,35 +1,23 @@
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
-import bodyParser from "body-parser";
-import dotenv from "dotenv";
+import authRoutes from "./routes/authRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 
-dotenv.config();
-
 const app = express();
-
-// ===== MIDDLEWARE =====
-app.use(cors());
-app.use(bodyParser.json());
 app.use(express.json());
+app.use(cors());
 
-// ===== MONGO DB CONNECTION =====
-const MONGO_URI = "mongodb://localhost:27017/studentPortfolioDB";
-
+// MongoDB Connection
 mongoose
-  .connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("🟢 MongoDB Connected Successfully"))
-  .catch((err) => console.log("🔴 MongoDB Connection Error:", err));
+  .connect("mongodb://127.0.0.1:27017/studentPortfolioDB")
+  .then(() => console.log("MongoDB Connected Successfully"))
+  .catch((err) => console.error(err));
 
-// ===== ROUTES =====
+// Routes
+app.use("/api/auth", authRoutes);
 app.use("/api/projects", projectRoutes);
 
-// ===== START SERVER =====
+// Server
 const PORT = 5000;
-app.listen(PORT, () => {
-  console.log(`🔥 Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

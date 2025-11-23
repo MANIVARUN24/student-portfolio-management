@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 const Login = ({ onLogin }) => {
   const [role, setRole] = useState('student');
@@ -6,188 +6,165 @@ const Login = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [institution, setInstitution] = useState('');
 
-  // Default email changes based on role
-  useEffect(() => {
-    if (role === 'student') {
-      setEmail('student.name@college.edu');
-    } else {
-      setEmail('teacher.admin@school.edu');
-    }
-  }, [role]);
-
-  const handleRoleChange = (r) => setRole(r);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onLogin({ role, email, password, institution });
+  const handleRoleChange = (r) => {
+    setRole(r);
+    setEmail('');
+    setPassword('');
+    setInstitution('');
   };
 
-  // Dynamic theme colors
-  const isAdmin = role === 'admin';
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role, email, password, institution }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+      onLogin({ role, email });
+
+    } catch (error) {
+      console.error("Login Error:", error);
+      alert("Something went wrong! Check server connection.");
+    }
+  };
+
+  const isAdmin = role === "admin";
+
   const theme = {
-    background: isAdmin ? '#e8edf7' : '#f7f8fa',
-    cardBg: '#ffffff',
-    titleColor: isAdmin ? '#1e3a8a' : '#111827',
-    buttonBg: isAdmin ? '#1e3a8a' : '#0a0a23',
-    buttonHover: isAdmin ? '#273ea1' : '#1a1a40',
+    background: isAdmin ? "#eef2ff" : "#f7f8fa",
+    cardBg: "#ffffff",
+    titleColor: isAdmin ? "#1e3a8a" : "#111827",
+    buttonBg: isAdmin ? "#1e3a8a" : "#0a0a23",
   };
 
   const institutions = [
-    'NIT Warangal',
-    'IIT Hyderabad',
-    'JNTU Hyderabad',
+    "NIT Warangal",
+    "IIT Hyderabad",
+    "JNTU Hyderabad",
   ];
 
   return (
     <div
       style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        width: "100vw",
+        height: "100vh",
         background: theme.background,
-        zIndex: 9999,
-        transition: 'background 0.3s ease-in-out',
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1rem",
       }}
     >
       <div
         style={{
           background: theme.cardBg,
-          padding: '2rem',
-          borderRadius: '16px',
-          boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
-          minWidth: '350px',
-          maxWidth: '90vw',
-          transition: 'all 0.3s ease-in-out',
+          padding: "2rem",
+          borderRadius: "16px",
+          minWidth: "350px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+          maxWidth: "400px",
         }}
       >
         <h2
           style={{
-            textAlign: 'center',
-            marginBottom: '0.5rem',
+            textAlign: "center",
+            marginBottom: "0.5rem",
             color: theme.titleColor,
           }}
         >
-          {isAdmin ? 'Teacher/Admin Portal' : 'Student Portfolio Platform'}
+          {isAdmin ? "Teacher/Admin Portal" : "Student Portfolio Platform"}
         </h2>
+
         <p
           style={{
-            textAlign: 'center',
-            color: '#6b7280',
-            marginBottom: '1.5rem',
+            textAlign: "center",
+            color: "#6b7280",
+            marginBottom: "1.5rem",
           }}
         >
           {isAdmin
-            ? 'Sign in to review, manage, and assess student projects'
-            : 'Sign in to manage your projects and portfolios'}
+            ? "Review & manage student projects"
+            : "Sign in to manage your portfolio"}
         </p>
 
         {/* Role Switch */}
         <div
           style={{
-            display: 'flex',
-            marginBottom: '1rem',
-            background: '#f3f4f6',
-            borderRadius: '999px',
-            overflow: 'hidden',
+            display: "flex",
+            background: "#f3f4f6",
+            borderRadius: "999px",
+            overflow: "hidden",
+            marginBottom: "1rem",
           }}
         >
           <button
             type="button"
+            onClick={() => handleRoleChange("student")}
             style={{
               flex: 1,
-              padding: '0.5rem 0',
-              background: role === 'student' ? '#fff' : 'transparent',
-              border: 'none',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              color: role === 'student' ? '#111827' : '#6b7280',
-              transition: 'all 0.2s',
+              padding: "0.6rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+              background: role === "student" ? "#ffffff" : "transparent",
+              border: "none",
+              color: role === "student" ? "#111827" : "#6b7280",
             }}
-            onClick={() => handleRoleChange('student')}
           >
             Student
           </button>
+
           <button
             type="button"
+            onClick={() => handleRoleChange("admin")}
             style={{
               flex: 1,
-              padding: '0.5rem 0',
-              background: role === 'admin' ? '#fff' : 'transparent',
-              border: 'none',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              color: role === 'admin' ? '#111827' : '#6b7280',
-              transition: 'all 0.2s',
+              padding: "0.6rem",
+              fontWeight: "bold",
+              cursor: "pointer",
+              background: role === "admin" ? "#ffffff" : "transparent",
+              border: "none",
+              color: role === "admin" ? "#111827" : "#6b7280",
             }}
-            onClick={() => handleRoleChange('admin')}
           >
             Admin/Teacher
           </button>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit}>
-          <label
-            style={{
-              display: 'block',
-              marginBottom: '0.25rem',
-              color: '#374151',
-            }}
-          >
-            Email
-          </label>
+          {/* Email */}
+          <label style={{ color: "#374151", fontSize: "0.9rem" }}>Email</label>
           <input
             type="email"
+            placeholder="Enter your email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
             required
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginBottom: isAdmin ? '1rem' : '1.25rem',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              backgroundColor: '#ffffff',
-              color: '#111827',
-              fontSize: '0.95rem',
-            }}
+            onChange={(e) => setEmail(e.target.value)}
+            style={inputBox}
           />
 
-          {/* Institution Dropdown (Only for Admins) */}
+          {/* Institution dropdown for admins */}
           {isAdmin && (
             <>
-              <label
-                style={{
-                  display: 'block',
-                  marginBottom: '0.25rem',
-                  color: '#374151',
-                }}
-              >
+              <label style={{ color: "#374151", fontSize: "0.9rem" }}>
                 Select Institution
               </label>
               <select
                 value={institution}
-                onChange={(e) => setInstitution(e.target.value)}
                 required
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  marginBottom: '1.25rem',
-                  borderRadius: '8px',
-                  border: '1px solid #d1d5db',
-                  backgroundColor: '#ffffff',
-                  color: institution ? '#111827' : '#6b7280',
-                  fontSize: '0.95rem',
-                }}
+                onChange={(e) => setInstitution(e.target.value)}
+                style={inputBox}
               >
-                <option value="" disabled>
-                  Choose your institution
-                </option>
+                <option value="" disabled>Select Institution</option>
                 {institutions.map((inst) => (
                   <option key={inst} value={inst}>
                     {inst}
@@ -197,56 +174,48 @@ const Login = ({ onLogin }) => {
             </>
           )}
 
-          <label
-            style={{
-              display: 'block',
-              marginBottom: '0.25rem',
-              color: '#374151',
-            }}
-          >
+          {/* Password */}
+          <label style={{ color: "#374151", fontSize: "0.9rem" }}>
             Password
           </label>
           <input
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
+            value={password}
             required
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              marginBottom: '1.5rem',
-              borderRadius: '8px',
-              border: '1px solid #d1d5db',
-              backgroundColor: '#ffffff',
-              color: '#111827',
-              fontSize: '0.95rem',
-            }}
+            onChange={(e) => setPassword(e.target.value)}
+            style={inputBox}
           />
 
-          <button
-            type="submit"
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              background: theme.buttonBg,
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              fontWeight: 'bold',
-              fontSize: '1rem',
-              cursor: 'pointer',
-              transition: 'background 0.3s',
-            }}
-            onMouseOver={(e) => (e.target.style.background = theme.buttonHover)}
-            onMouseOut={(e) => (e.target.style.background = theme.buttonBg)}
-          >
-            Sign in as {isAdmin ? 'Teacher/Admin' : 'Student'}
+          {/* Sign-in Button */}
+          <button className="login-btn" type="submit" style={{
+            width: "100%",
+            padding: "0.9rem",
+            background: theme.buttonBg,
+            color: "#fff",
+            border: "none",
+            borderRadius: "10px",
+            fontWeight: "bold",
+            marginTop: "0.5rem",
+            cursor: "pointer",
+            fontSize: "1rem",
+          }}>
+            Sign in as {isAdmin ? "Teacher/Admin" : "Student"}
           </button>
         </form>
       </div>
     </div>
   );
+};
+
+const inputBox = {
+  width: "100%",
+  padding: "0.8rem",
+  borderRadius: "10px",
+  border: "1px solid #d1d5db",
+  backgroundColor: "#ffffff",
+  marginBottom: "1rem",
+  fontSize: "0.95rem",
 };
 
 export default Login;
