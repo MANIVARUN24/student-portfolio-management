@@ -12,80 +12,85 @@ import Login from "./components/Login"; // Make sure file is Login.jsx
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-  const [projects, setProjects] = useState([]);
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/projects");
-        const data = await res.json();
-        setProjects(data);
-      } catch (error) {
-        console.error("❌ Error fetching projects:", error);
-      }
-    };
 
-    fetchProjects();
-  }, []);
-  const addProject = async (proj) => {
-    try {
-      const res = await fetch("http://localhost:5000/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(proj),
-      });
+  // Local sample projects used instead of backend
+  const [projects, setProjects] = useState([
+    {
+      _id: "1",
+      title: "E-commerce Website",
+      category: "Web Development",
+      description: "A full-stack e-commerce platform built with React and Node.js",
+      status: "completed",
+      progress: 100,
+      tags: ["React", "Node.js", "MongoDB"],
+      date: "Jan 15, 2024 - Mar 15, 2024",
+      image: "https://images.unsplash.com/photo-1515378791036-0648a3ef77b2",
+      milestones: 6,
+    },
+    {
+      _id: "2",
+      title: "Mobile App UI Design",
+      category: "UI/UX Design",
+      description: "User interface design for a fitness tracking mobile application",
+      status: "in progress",
+      progress: 75,
+      tags: ["Figma", "Adobe XD", "Principle"],
+      date: "Feb 1, 2024 - Apr 1, 2024",
+      image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308",
+      milestones: 5,
+    },
+    {
+      _id: "3",
+      title: "Data Analysis Project",
+      category: "Data Science",
+      description: "Statistical analysis of customer behavior using Python and pandas",
+      status: "planning",
+      progress: 25,
+      tags: ["Python", "Pandas", "Matplotlib"],
+      date: "Mar 1, 2024 - May 1, 2024",
+      image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
+      milestones: 4,
+    },
+  ]);
 
-      const savedProject = await res.json();
-      setProjects((prev) => [...prev, savedProject]);
-    } catch (error) {
-      console.error("❌ Error adding project:", error);
-    }
+  // Add project locally
+  const addProject = (proj) => {
+    const newProj = { ...proj, _id: Date.now().toString() };
+    setProjects((prev) => [...prev, newProj]);
   };
 
-  // 🟨 Update existing project locally
+  // Update existing project locally
   const updateProject = (updatedProj) => {
     setProjects((prev) =>
       prev.map((proj) => (proj._id === updatedProj._id ? updatedProj : proj))
     );
   };
 
-  // 🟦 Admin gives feedback (updates backend)
-  const provideFeedback = async (index, feedback, rating, status) => {
-    try {
-      const project = projects[index];
-
-      const res = await fetch(
-        `http://localhost:5000/api/projects/${project._id}`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ feedback, rating, status }),
-        }
-      );
-
-      const updated = await res.json();
-
-      setProjects((prev) =>
-        prev.map((p, i) => (i === index ? updated : p))
-      );
-    } catch (error) {
-      console.error("❌ Error updating project:", error);
-    }
+  // Provide feedback locally
+  const provideFeedback = (index, feedback, rating, status) => {
+    setProjects((prev) =>
+      prev.map((p, i) =>
+        i === index
+          ? { ...p, feedback: feedback || p.feedback, rating: rating || p.rating, status: status || p.status }
+          : p
+      )
+    );
   };
 
-  // 🟧 Handle login
+  // Handle login
   const handleLogin = ({ role }) => {
     setIsAdmin(role === "admin");
     setLoggedIn(true);
   };
 
-  // 🟥 Handle logout
+  // Handle logout
   const handleLogout = () => {
     if (window.confirm("Are you sure you want to log out?")) {
       setLoggedIn(false);
     }
   };
 
-  // ⛔ Show login page first
+  // Show login page first
   if (!loggedIn) {
     return <Login onLogin={handleLogin} />;
   }
@@ -100,16 +105,9 @@ function App() {
             path="/"
             element={
               isAdmin ? (
-                <AdminDashboard
-                  allProjects={projects}
-                  provideFeedback={provideFeedback}
-                />
+                <AdminDashboard allProjects={projects} provideFeedback={provideFeedback} />
               ) : (
-                <StudentDashboard
-                  projects={projects}
-                  addProject={addProject}
-                  updateProject={updateProject}
-                />
+                <StudentDashboard projects={projects} addProject={addProject} updateProject={updateProject} />
               )
             }
           />
@@ -122,12 +120,7 @@ function App() {
           {isAdmin && (
             <Route
               path="/review"
-              element={
-                <AdminReview
-                  projects={projects}
-                  provideFeedback={provideFeedback}
-                />
-              }
+              element={<AdminReview projects={projects} provideFeedback={provideFeedback} />}
             />
           )}
         </Routes>

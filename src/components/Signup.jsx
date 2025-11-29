@@ -9,20 +9,9 @@ export default function Signup({ onClose }) {
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    const response = await fetch("http://localhost:5000/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, role, institution }),
-    });
-
-    const data = await response.json();
-
-    if (data.error) {
-      alert(data.error);
-    } else {
-      alert("Signup successful! You can login now.");
-      onClose();
-    }
+    // Simulate success without a backend
+    alert("Signup successful (local). You can login now.");
+    onClose();
   };
 
   return (

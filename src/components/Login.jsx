@@ -9,43 +9,23 @@ const Login = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
+  // Simulate a local login (no backend)
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, role }),
-      });
+    // Basic local validation
+    if (!email || !password) return alert("Enter credentials");
 
-      const data = await res.json();
-
-      if (data.error) {
-        alert(data.error);
-        return;
-      }
-
-      onLogin(data);
-    } catch (err) {
-      console.error(err);
-      alert("Server not responding!");
-    }
+    // Simulate server response
+    const data = { email, role, name: email.split("@")[0] };
+    onLogin(data);
   };
 
+  // Simulate signup locally
   const handleSignup = async (e) => {
     e.preventDefault();
-
-    const res = await fetch("http://localhost:5000/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password, role }),
-    });
-
-    const data = await res.json();
-    if (data.error) return alert(data.error);
-
-    alert("Account created! Please login.");
+    if (!name || !email || !password) return alert("Fill all fields");
+    alert("Account created locally. Please login.");
     setPage("login");
   };
 
@@ -61,15 +41,8 @@ const Login = ({ onLogin }) => {
         role,
       };
 
-      const res = await fetch("http://localhost:5000/api/auth/google-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userData),
-      });
-
-      const data = await res.json();
-
-      onLogin(data);
+      // Skip backend call; directly login
+      onLogin(userData);
     } catch (err) {
       alert("Google login failed.");
     }
