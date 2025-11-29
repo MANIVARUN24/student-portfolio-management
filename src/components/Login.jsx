@@ -9,19 +9,13 @@ const Login = ({ onLogin }) => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
-  // Simulate a local login (no backend)
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    // Basic local validation
     if (!email || !password) return alert("Enter credentials");
-
-    // Simulate server response
     const data = { email, role, name: email.split("@")[0] };
     onLogin(data);
   };
 
-  // Simulate signup locally
   const handleSignup = async (e) => {
     e.preventDefault();
     if (!name || !email || !password) return alert("Fill all fields");
@@ -41,7 +35,6 @@ const Login = ({ onLogin }) => {
         role,
       };
 
-      // Skip backend call; directly login
       onLogin(userData);
     } catch (err) {
       alert("Google login failed.");
@@ -49,185 +42,242 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        background: "#f7f7f7",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <div
-        style={{
-          width: "360px",
-          padding: "25px",
-          background: "#fff",
-          borderRadius: "12px",
-          boxShadow: "0 3px 15px rgba(0,0,0,0.1)",
-        }}
-      >
-        <h2 style={{ textAlign: "center", marginBottom: "10px" }}>
-          {page === "login" ? "Student Portfolio Platform" : "Create Account"}
-        </h2>
-
-        {/* Role Switch */}
-        <div
-          style={{
-            display: "flex",
-            background: "#eee",
-            borderRadius: "20px",
-            marginBottom: "15px",
-          }}
-        >
-          <button
-            onClick={() => setRole("student")}
-            style={{
-              flex: 1,
-              padding: "10px",
-              border: "none",
-              background: role === "student" ? "#fff" : "transparent",
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            Student
-          </button>
-
-          <button
-            onClick={() => setRole("admin")}
-            style={{
-              flex: 1,
-              padding: "10px",
-              border: "none",
-              background: role === "admin" ? "#fff" : "transparent",
-              fontWeight: "bold",
-              cursor: "pointer",
-            }}
-          >
-            Admin/Teacher
-          </button>
+    <div style={pageWrap}>
+      <div style={leftPanel}>
+        <div style={leftContent}>
+          <h1 style={{ color: "#fff", margin: 0, fontSize: "2rem" }}>
+            Student Portfolio
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.9)", marginTop: "0.5rem" }}>
+            Showcase your projects, track progress, and get feedback from your
+            mentors.
+          </p>
+          <div style={illustration} aria-hidden />
         </div>
+      </div>
 
-        {/* LOGIN FORM */}
-        {page === "login" && (
-          <>
-            <form onSubmit={handleLogin}>
-              <label>Email</label>
-              <input
-                style={inp}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+      <div style={rightPanel}>
+        <div style={card}>
+          <h2 style={{ marginBottom: "0.25rem" }}>
+            {page === "login" ? "Welcome back" : "Create account"}
+          </h2>
+          <p style={{ marginTop: 0, color: "#666" }}>
+            {page === "login"
+              ? "Sign in to continue"
+              : "Register a new account"}
+          </p>
 
-              <label>Password</label>
-              <input
-                style={inp}
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-
-              <button style={btn}>Login</button>
-            </form>
-
-            <button style={googleBtn} onClick={handleGoogleLogin}>
-              Sign in with Google
+          <div style={roleSwitchWrap}>
+            <button
+              onClick={() => setRole("student")}
+              style={{
+                ...roleBtn,
+                background: role === "student" ? "#fff" : "transparent",
+              }}
+            >
+              Student
             </button>
+            <button
+              onClick={() => setRole("admin")}
+              style={{
+                ...roleBtn,
+                background: role === "admin" ? "#fff" : "transparent",
+              }}
+            >
+              Admin / Teacher
+            </button>
+          </div>
 
-            <p style={{ textAlign: "center" }}>
-              New user?{" "}
-              <span
-                style={{ color: "blue", cursor: "pointer" }}
-                onClick={() => setPage("signup")}
-              >
-                Create account
-              </span>
-            </p>
-          </>
-        )}
+          {page === "login" ? (
+            <>
+              <form onSubmit={handleLogin}>
+                <label style={label}>Email</label>
+                <input
+                  style={input}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
 
-        {/* SIGNUP FORM */}
-        {page === "signup" && (
-          <>
-            <form onSubmit={handleSignup}>
-              <label>Name</label>
-              <input
-                style={inp}
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
+                <label style={label}>Password</label>
+                <input
+                  style={input}
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
 
-              <label>Email</label>
-              <input
-                style={inp}
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
+                <button style={primaryBtn}>Sign in</button>
+              </form>
 
-              <label>Password</label>
-              <input
-                style={inp}
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div style={{ textAlign: "center", marginTop: 12 }}>
+                <button
+                  style={googleBtn}
+                  onClick={handleGoogleLogin}
+                >
+                  Sign in with Google
+                </button>
+              </div>
 
-              <button style={btn}>Create Account</button>
-            </form>
+              <p style={{ textAlign: "center", marginTop: 12 }}>
+                New here?{" "}
+                <span
+                  style={{ color: "#2d6cdf", cursor: "pointer" }}
+                  onClick={() => setPage("signup")}
+                >
+                  Create account
+                </span>
+              </p>
+            </>
+          ) : (
+            <>
+              <form onSubmit={handleSignup}>
+                <label style={label}>Full name</label>
+                <input
+                  style={input}
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
 
-            <p style={{ textAlign: "center" }}>
-              Already have an account?{" "}
-              <span
-                style={{ color: "blue", cursor: "pointer" }}
-                onClick={() => setPage("login")}
-              >
-                Login
-              </span>
-            </p>
-          </>
-        )}
+                <label style={label}>Email</label>
+                <input
+                  style={input}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+
+                <label style={label}>Password</label>
+                <input
+                  style={input}
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+
+                <button style={primaryBtn}>Create account</button>
+              </form>
+
+              <p style={{ textAlign: "center", marginTop: 12 }}>
+                Already have an account?{" "}
+                <span
+                  style={{ color: "#2d6cdf", cursor: "pointer" }}
+                  onClick={() => setPage("login")}
+                >
+                  Sign in
+                </span>
+              </p>
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-const inp = {
+const pageWrap = {
+  display: "flex",
+  minHeight: "100vh",
+  fontFamily:
+    "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
+};
+
+const leftPanel = {
+  flex: 1,
+  background:
+    "linear-gradient(135deg, #2d6cdf 0%, #7b61ff 100%)",
+  color: "#fff",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "3rem",
+  minHeight: "400px",
+};
+
+const leftContent = {
+  maxWidth: "420px",
+};
+
+const illustration = {
+  marginTop: "1.25rem",
+  width: "100%",
+  height: "160px",
+  borderRadius: "12px",
+  background:
+    "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
+  boxShadow: "inset 0 -20px 40px rgba(0,0,0,0.08)",
+};
+
+const rightPanel = {
+  width: "420px",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "3rem",
+};
+
+const card = {
+  width: "100%",
+  background: "#fff",
+  borderRadius: "12px",
+  padding: "1.75rem",
+  boxShadow: "0 6px 30px rgba(11,16,28,0.08)",
+};
+
+const roleSwitchWrap = {
+  display: "flex",
+  background: "#f3f4f6",
+  borderRadius: "999px",
+  padding: "6px",
+  margin: "1rem 0",
+};
+
+const roleBtn = {
+  flex: 1,
+  padding: "8px 10px",
+  border: "none",
+  borderRadius: "999px",
+  fontWeight: "600",
+  cursor: "pointer",
+  background: "transparent",
+};
+
+const label = {
+  display: "block",
+  marginBottom: 6,
+  fontSize: "0.9rem",
+  color: "#333",
+};
+const input = {
   width: "100%",
   padding: "10px",
   marginBottom: "10px",
-  border: "1px solid #ccc",
   borderRadius: "8px",
+  border: "1px solid #e6e7eb",
 };
-
-const btn = {
+const primaryBtn = {
   width: "100%",
   padding: "12px",
-  background: "#0a0a23",
-  color: "white",
+  background: "#2d6cdf",
+  color: "#fff",
   border: "none",
   borderRadius: "8px",
-  marginBottom: "10px",
   cursor: "pointer",
+  marginTop: 6,
 };
-
 const googleBtn = {
   width: "100%",
-  padding: "12px",
+  padding: "10px",
   background: "#DB4437",
-  color: "white",
+  color: "#fff",
   border: "none",
   borderRadius: "8px",
-  marginTop: "10px",
   cursor: "pointer",
 };
 
