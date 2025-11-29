@@ -5,54 +5,69 @@ const router = express.Router();
 
 // LOGIN
 router.post("/login", async (req, res) => {
-  const { email, password, role } = req.body;
+  try {
+    const { email, password, role } = req.body;
 
-  const user = await User.findOne({ email });
+    const user = await User.findOne({ email, role });
+    if (!user) return res.json({ error: "User does not exist for this role" });
 
-  if (!user) return res.json({ error: "User does not exist" });
+    // NOTE: plain text password check (upgrade to bcrypt in production)
+    if (user.password !== password) return res.json({ error: "Incorrect password" });
 
-  if (user.password !== password)
-    return res.json({ error: "Incorrect password" });
+    const safeUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      photo: user.photo || null
+    };
 
-  if (user.role !== role)
-    return res.json({ error: "Role mismatch (selected wrong role)" });
-
-  res.json(user);
+    res.json(safeUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
 });
 
 // SIGNUP
 router.post("/signup", async (req, res) => {
-  const { name, email, password, role } = req.body;
+  try {
+    const { name, email, password, role } = req.body;
+    const exists = await User.findOne({ email, role });
+    if (exists) return res.json({ error: "Account already exists for this role" });
 
-  let user = await User.findOne({ email });
-  if (user) return res.json({ error: "User already exists" });
+    const user = new User({ name, email, password, role });
+    await user.save();
 
-  user = new User({ name, email, password, role });
-  await user.save();
-
-  res.json({ message: "Signup successful", user });
+    res.json({ message: "Signup successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Signup failed" });
+  }
 });
 
-// GOOGLE LOGIN
+// GOOGLE LOGIN (via frontend Firebase)
 router.post("/google-login", async (req, res) => {
   try {
     const { name, email, photo, role } = req.body;
-
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email, role });
 
     if (!user) {
-      user = new User({
-        name,
-        email,
-        password: "",
-        role,
-        photo,
-      });
+      user = new User({ name, email, photo, role, password: "" });
       await user.save();
     }
 
-    res.json(user);
-  } catch (error) {
+    const safeUser = {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      photo: user.photo || null,
+    };
+
+    res.json(safeUser);
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Google login failed" });
   }
 });

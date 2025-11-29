@@ -1,28 +1,91 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "../firebase";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const Login = ({ onLogin }) => {
   const [role, setRole] = useState("student");
   const [page, setPage] = useState("login");
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
+  // 🔐 CAPTCHA STATES
+  const [captchaText, setCaptchaText] = useState("");
+  const [userCaptcha, setUserCaptcha] = useState("");
+
+  // Generate CAPTCHA
+  const generateCaptcha = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let text = "";
+    for (let i = 0; i < 6; i++) {
+      text += chars[Math.floor(Math.random() * chars.length)];
+    }
+    setCaptchaText(text);
+  };
+
+  useEffect(() => {
+    generateCaptcha();
+  }, []);
+
+  // LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
-    if (!email || !password) return alert("Enter credentials");
-    const data = { email, role, name: email.split("@")[0] };
-    onLogin(data);
+
+    if (userCaptcha !== captchaText) {
+      alert("Captcha incorrect. Please try again.");
+      generateCaptcha();
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      });
+
+      const data = await res.json();
+      if (data.error) return alert(data.error);
+
+      onLogin(data);
+    } catch (err) {
+      console.error(err);
+      alert("Server not responding");
+    }
   };
 
+  // SIGNUP
   const handleSignup = async (e) => {
     e.preventDefault();
-    if (!name || !email || !password) return alert("Fill all fields");
-    alert("Account created locally. Please login.");
-    setPage("login");
+
+    if (userCaptcha !== captchaText) {
+      alert("Captcha incorrect. Please try again.");
+      generateCaptcha();
+      return;
+    }
+
+    try {
+      const res = await fetch(`${API}/api/auth/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password, role }),
+      });
+
+      const data = await res.json();
+      if (data.error) return alert(data.error);
+
+      alert("Account created! Please login.");
+      setPage("login");
+    } catch (err) {
+      console.error(err);
+      alert("Signup failed");
+    }
   };
 
+  // ⭐ GOOGLE LOGIN
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
@@ -35,9 +98,19 @@ const Login = ({ onLogin }) => {
         role,
       };
 
-      onLogin(userData);
+      const res = await fetch(`${API}/api/auth/google-login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await res.json();
+      if (data.error) return alert(data.error);
+
+      onLogin(data);
     } catch (err) {
-      alert("Google login failed.");
+      console.error(err);
+      alert("Google login failed");
     }
   };
 
@@ -48,25 +121,21 @@ const Login = ({ onLogin }) => {
           <h1 style={{ color: "#fff", margin: 0, fontSize: "2rem" }}>
             Student Portfolio
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.9)", marginTop: "0.5rem" }}>
-            Showcase your projects, track progress, and get feedback from your
-            mentors.
+          <p style={{ color: "rgba(255,255,255,0.9)" }}>
+            Showcase your projects and get feedback.
           </p>
-          <div style={illustration} aria-hidden />
+          <div style={illustration} />
         </div>
       </div>
 
       <div style={rightPanel}>
         <div style={card}>
-          <h2 style={{ marginBottom: "0.25rem" }}>
-            {page === "login" ? "Welcome back" : "Create account"}
-          </h2>
-          <p style={{ marginTop: 0, color: "#666" }}>
-            {page === "login"
-              ? "Sign in to continue"
-              : "Register a new account"}
+          <h2>{page === "login" ? "Welcome back" : "Create account"}</h2>
+          <p style={{ color: "#666" }}>
+            {page === "login" ? "Sign in to continue" : "Register your account"}
           </p>
 
+          {/* ROLE SWITCH */}
           <div style={roleSwitchWrap}>
             <button
               onClick={() => setRole("student")}
@@ -90,38 +159,51 @@ const Login = ({ onLogin }) => {
 
           {page === "login" ? (
             <>
+              {/* LOGIN FORM */}
               <form onSubmit={handleLogin}>
-                <label style={label}>Email</label>
+                <label>Email</label>
                 <input
                   style={input}
                   type="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
                 />
 
-                <label style={label}>Password</label>
+                <label>Password</label>
                 <input
                   style={input}
                   type="password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                 />
+
+                {/* CAPTCHA */}
+                <label>Enter Captcha</label>
+                <div style={captchaBox}>{captchaText}</div>
+
+                <input
+                  style={input}
+                  type="text"
+                  required
+                  placeholder="Enter captcha"
+                  value={userCaptcha}
+                  onChange={(e) => setUserCaptcha(e.target.value)}
+                />
+                <button type="button" onClick={generateCaptcha} style={refreshBtn}>
+                  Refresh Captcha
+                </button>
 
                 <button style={primaryBtn}>Sign in</button>
               </form>
 
-              <div style={{ textAlign: "center", marginTop: 12 }}>
-                <button
-                  style={googleBtn}
-                  onClick={handleGoogleLogin}
-                >
-                  Sign in with Google
-                </button>
-              </div>
+              {/* GOOGLE LOGIN BUTTON */}
+              <button style={googleBtn} onClick={handleGoogleLogin}>
+                Sign in with Google
+              </button>
 
-              <p style={{ textAlign: "center", marginTop: 12 }}>
+              <p style={{ marginTop: 10 }}>
                 New here?{" "}
                 <span
                   style={{ color: "#2d6cdf", cursor: "pointer" }}
@@ -133,38 +215,55 @@ const Login = ({ onLogin }) => {
             </>
           ) : (
             <>
+              {/* SIGNUP FORM */}
               <form onSubmit={handleSignup}>
-                <label style={label}>Full name</label>
+                <label>Full Name</label>
                 <input
                   style={input}
                   type="text"
+                  required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  required
                 />
 
-                <label style={label}>Email</label>
+                <label>Email</label>
                 <input
                   style={input}
                   type="email"
+                  required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
                 />
 
-                <label style={label}>Password</label>
+                <label>Password</label>
                 <input
                   style={input}
                   type="password"
+                  required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                 />
+
+                {/* CAPTCHA */}
+                <label>Enter Captcha</label>
+                <div style={captchaBox}>{captchaText}</div>
+
+                <input
+                  style={input}
+                  type="text"
+                  required
+                  placeholder="Enter captcha"
+                  value={userCaptcha}
+                  onChange={(e) => setUserCaptcha(e.target.value)}
+                />
+                <button type="button" onClick={generateCaptcha} style={refreshBtn}>
+                  Refresh Captcha
+                </button>
 
                 <button style={primaryBtn}>Create account</button>
               </form>
 
-              <p style={{ textAlign: "center", marginTop: 12 }}>
+              <p style={{ marginTop: 10 }}>
                 Already have an account?{" "}
                 <span
                   style={{ color: "#2d6cdf", cursor: "pointer" }}
@@ -181,104 +280,19 @@ const Login = ({ onLogin }) => {
   );
 };
 
-const pageWrap = {
-  display: "flex",
-  minHeight: "100vh",
-  fontFamily:
-    "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial",
-};
-
-const leftPanel = {
-  flex: 1,
-  background:
-    "linear-gradient(135deg, #2d6cdf 0%, #7b61ff 100%)",
-  color: "#fff",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "3rem",
-  minHeight: "400px",
-};
-
-const leftContent = {
-  maxWidth: "420px",
-};
-
-const illustration = {
-  marginTop: "1.25rem",
-  width: "100%",
-  height: "160px",
-  borderRadius: "12px",
-  background:
-    "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))",
-  boxShadow: "inset 0 -20px 40px rgba(0,0,0,0.08)",
-};
-
-const rightPanel = {
-  width: "420px",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: "3rem",
-};
-
-const card = {
-  width: "100%",
-  background: "#fff",
-  borderRadius: "12px",
-  padding: "1.75rem",
-  boxShadow: "0 6px 30px rgba(11,16,28,0.08)",
-};
-
-const roleSwitchWrap = {
-  display: "flex",
-  background: "#f3f4f6",
-  borderRadius: "999px",
-  padding: "6px",
-  margin: "1rem 0",
-};
-
-const roleBtn = {
-  flex: 1,
-  padding: "8px 10px",
-  border: "none",
-  borderRadius: "999px",
-  fontWeight: "600",
-  cursor: "pointer",
-  background: "transparent",
-};
-
-const label = {
-  display: "block",
-  marginBottom: 6,
-  fontSize: "0.9rem",
-  color: "#333",
-};
-const input = {
-  width: "100%",
-  padding: "10px",
-  marginBottom: "10px",
-  borderRadius: "8px",
-  border: "1px solid #e6e7eb",
-};
-const primaryBtn = {
-  width: "100%",
-  padding: "12px",
-  background: "#2d6cdf",
-  color: "#fff",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  marginTop: 6,
-};
-const googleBtn = {
-  width: "100%",
-  padding: "10px",
-  background: "#DB4437",
-  color: "#fff",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-};
+/* STYLES */
+const pageWrap = { display: "flex", minHeight: "100vh", fontFamily: "Inter" };
+const leftPanel = { flex: 1, background: "#2d6cdf", color: "#fff", padding: "3rem" };
+const leftContent = { maxWidth: "420px" };
+const illustration = { height: "150px", background: "rgba(255,255,255,0.1)" };
+const rightPanel = { width: "420px", padding: "3rem", display: "flex", justifyContent: "center" };
+const card = { width: "100%", background: "#fff", padding: "2rem", borderRadius: "12px" };
+const roleSwitchWrap = { display: "flex", background: "#eee", padding: "6px", borderRadius: "50px", marginBottom: "15px" };
+const roleBtn = { flex: 1, padding: "8px", border: "none", borderRadius: "50px", cursor: "pointer" };
+const input = { width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid #ccc", marginBottom: "10px" };
+const primaryBtn = { width: "100%", padding: "12px", background: "#2d6cdf", color: "#fff", border: "none", borderRadius: "8px", marginTop: "10px" };
+const googleBtn = { width: "100%", padding: "10px", background: "#DB4437", color: "#fff", border: "none", borderRadius: "8px", marginTop: "10px" };
+const captchaBox = { fontSize: "24px", fontWeight: "bold", letterSpacing: "4px", background: "#f1f1f1", padding: "10px", textAlign: "center", marginBottom: "10px", borderRadius: "8px" };
+const refreshBtn = { padding: "8px 12px", background: "#444", color: "#fff", border: "none", borderRadius: "6px", marginBottom: "10px", cursor: "pointer" };
 
 export default Login;
