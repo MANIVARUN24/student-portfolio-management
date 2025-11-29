@@ -1,33 +1,59 @@
 import express from "express";
-import User from "../models/User.js";   // THIS NOW WORKS
+import User from "../models/User.js";
 
 const router = express.Router();
 
-// POST /api/auth/login
+// LOGIN
 router.post("/login", async (req, res) => {
-  try {
-    const { role, email, password, institution } = req.body;
+  const { email, password, role } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email & password required" });
-    }
+  const user = await User.findOne({ email });
+
+  if (!user) return res.json({ error: "User does not exist" });
+
+  if (user.password !== password)
+    return res.json({ error: "Incorrect password" });
+
+  if (user.role !== role)
+    return res.json({ error: "Role mismatch (selected wrong role)" });
+
+  res.json(user);
+});
+
+// SIGNUP
+router.post("/signup", async (req, res) => {
+  const { name, email, password, role } = req.body;
+
+  let user = await User.findOne({ email });
+  if (user) return res.json({ error: "User already exists" });
+
+  user = new User({ name, email, password, role });
+  await user.save();
+
+  res.json({ message: "Signup successful", user });
+});
+
+// GOOGLE LOGIN
+router.post("/google-login", async (req, res) => {
+  try {
+    const { name, email, photo, role } = req.body;
 
     let user = await User.findOne({ email });
 
-    // Auto-register new user
     if (!user) {
-      user = new User({ role, email, password, institution });
+      user = new User({
+        name,
+        email,
+        password: "",
+        role,
+        photo,
+      });
       await user.save();
     }
 
-    return res.json({
-      message: "Login successful",
-      user,
-    });
-
-  } catch (err) {
-    console.error("LOGIN ERROR:", err);
-    return res.status(500).json({ error: "Server error" });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Google login failed" });
   }
 });
 

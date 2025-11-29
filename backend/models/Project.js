@@ -1,23 +1,24 @@
 import mongoose from "mongoose";
 
-const ProjectSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  student: { type: String, required: true },
+const projectSchema = new mongoose.Schema({
+  title: String,
   category: String,
   description: String,
-  status: { type: String, default: "pending-review" },
-  progress: Number,
-  tags: [String],
   startDate: String,
   endDate: String,
+  tags: [String],
   repoURL: String,
   liveURL: String,
   image: String,
-  milestones: Number,
-  rating: String,
-  feedback: String
+  progress: {
+    type: Number,
+    default: 0
+  },
+  status: {
+    type: String,
+    default: "in-progress"
+  },
+  milestones: Array
 });
 
-// VERY IMPORTANT — DEFAULT EXPORT ❗❗
-export default mongoose.model("Project", ProjectSchema);
-
+export default mongoose.model("Project", projectSchema);

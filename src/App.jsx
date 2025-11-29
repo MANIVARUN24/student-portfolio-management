@@ -12,11 +12,7 @@ import Login from "./components/Login"; // Make sure file is Login.jsx
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
-
-  // ✅ MongoDB Projects
   const [projects, setProjects] = useState([]);
-
-  // 🟢 Load all projects from backend
   useEffect(() => {
     const fetchProjects = async () => {
       try {
@@ -30,8 +26,6 @@ function App() {
 
     fetchProjects();
   }, []);
-
-  // 🟩 Add new project (student)
   const addProject = async (proj) => {
     try {
       const res = await fetch("http://localhost:5000/api/projects", {
